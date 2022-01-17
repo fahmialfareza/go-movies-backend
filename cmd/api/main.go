@@ -4,11 +4,11 @@ import (
 	"backend/models"
 	"context"
 	"database/sql"
-	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -42,13 +42,13 @@ type application struct {
 func main() {
 	var cfg config
 
-	flag.IntVar(&cfg.port, "port", 4000, "Server port to listen on")
-	flag.StringVar(&cfg.env, "env", "development", "Application environment (development|production")
-	flag.StringVar(&cfg.db.dsn, "dsn", "postgres://postgres:postgres@localhost/go_movies?sslmode=disable", "Postgres connection string")
-	flag.StringVar(&cfg.jwt.secret, "jwt-secret", "2dce505d96a53c5768052ee90f3df2055657518dad489160df9913f66042e160", "secret")
-	flag.Parse()
-
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
+
+	// read jwt secret from env
+	cfg.port, _ = strconv.Atoi(os.Getenv("PORT"))
+	cfg.env = os.Getenv("APP_ENV")
+	cfg.db.dsn = os.Getenv("DATABASE_URL")
+	cfg.jwt.secret = os.Getenv("GO_MOVIES_JWT")
 
 	db, err := openDB(cfg)
 	if err != nil {
